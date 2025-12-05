@@ -69,7 +69,7 @@ public class RestaurantController : ControllerBase
         }
         catch (Exception ex)
         {
-            return Problem("An error occurred while fetching the restaurant.");
+            return Problem(ex.Message);
         }
     }
 

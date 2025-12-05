@@ -24,6 +24,7 @@ public class RestaurantRepository
                            u.Id AS OwnerId, u.Username
                     FROM Restaurants r
                     INNER JOIN Users u ON r.OwnerId = u.Id
+                    WHERE r.Status = 'objavljeno'
                     ORDER BY {orderBy} {orderDirection} LIMIT @PageSize OFFSET @Offset";
             using SqliteCommand command = new SqliteCommand(query, connection);
             command.Parameters.AddWithValue("@PageSize", pageSize);
@@ -84,7 +85,7 @@ public class RestaurantRepository
             using SqliteConnection connection = new SqliteConnection(_connectionString);
             connection.Open();
 
-            string query = "SELECT COUNT(*) FROM Restaurants";
+            string query = "SELECT COUNT(*) FROM Restaurants WHERE Status = 'objavljeno'";
             using SqliteCommand command = new SqliteCommand(query, connection);
 
             return Convert.ToInt32(command.ExecuteScalar());
@@ -110,7 +111,6 @@ public class RestaurantRepository
             throw;
         }
     }
-
     public List<Restaurant> GetByOwner(int ownerId)
     {
         List<Restaurant> restaurants = new List<Restaurant>();
@@ -171,7 +171,6 @@ public class RestaurantRepository
         }
     }
 
-
     public Restaurant GetById(int id)
     {
         Restaurant restaurant = null;
@@ -184,7 +183,12 @@ public class RestaurantRepository
             string query = @"
                     SELECT r.Id, r.Name, r.Description, r.Capacity, r.ImageUrl, r.Longitude, r.Latitude, r.Status,
                            u.Id AS OwnerId, u.Username,
-                           m.Id AS MealId, m.OrderPosition, m.Name AS MealName, m.Price, m.Ingredients, m.ImageUrl AS MealImageUrl
+                           m.Id AS MealId, 
+                           m.OrderPosition, 
+                           m.Name AS MealName, 
+                           m.Price, m.Ingredients, 
+                           m.ImageUrl AS MealImageUrl
+
                     FROM Restaurants r
                     INNER JOIN Users u ON r.OwnerId = u.Id
                     LEFT JOIN Meals m ON m.RestaurantId = r.Id
@@ -212,7 +216,7 @@ public class RestaurantRepository
                         Id = Convert.ToInt32(reader["OwnerId"]),
                         Username = reader["Username"].ToString()
                     },
-                    Meals = new List<Meal>()
+                    Meals = new List<Meal>(),
                 };
 
                 do
